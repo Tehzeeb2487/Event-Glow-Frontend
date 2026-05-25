@@ -296,7 +296,21 @@ export default function MyServices() {
                     type="file"
                     accept="image/*"
                     className="w-full text-sm"
-                    onChange={(e) => setImage(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+
+                        if (!file) return;
+
+                        const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp", "image/avif"];
+
+                        if (!allowed.includes(file.type)) {
+                          toast.error("Only JPG, PNG, WEBP, or AVIF images are allowed");
+                          e.target.value = "";
+                          return;
+                        }
+
+                        setImage(file);
+                      }}
                   />
                 </div>
                 <div className="space-y-1.5 col-span-2">
