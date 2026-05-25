@@ -15,6 +15,7 @@ export default function About() {
   const [about, setAbout] = useState<any>({});
   const [stats, setStats] = useState<any[]>([]);
   const [team, setTeam] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchAbout();
@@ -33,6 +34,8 @@ export default function About() {
 
     } catch(err) {
       console.log(err);
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -47,7 +50,17 @@ export default function About() {
 
     } catch(err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex item-center justify-center h-[60vh]">
+        <p>Loading...</p>
+      </div>
+    )
   }
 
   return (

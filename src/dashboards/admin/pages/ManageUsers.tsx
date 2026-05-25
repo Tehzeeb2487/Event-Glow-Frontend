@@ -25,6 +25,7 @@ interface User {
 
 export default function ManageUsers() {
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<User | null>(null);
   const filters = ["All", "Active", "Inactive"];
@@ -45,6 +46,8 @@ export default function ManageUsers() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setLoading(true);
+        
         const token = localStorage.getItem("token");
 
         const res = await fetch("https://eventglow-backend.onrender.com/api/users/", {
@@ -57,6 +60,8 @@ export default function ManageUsers() {
         setUsers(data);
       } catch (err) {
         console.log("Error fetching users", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -153,7 +158,16 @@ export default function ManageUsers() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  Loading Users...
+                </TableCell>
+              </TableRow>
+            ) : filtered.length === 0 ? (
               <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No users found</TableCell></TableRow>
             ) : filtered.map((u) => (
               <TableRow key={u.id}>

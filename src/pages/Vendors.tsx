@@ -53,14 +53,26 @@ export default function Vendors() {
   const [step, setStep] = useState<"details" | "book">("details");
   const [bookingForm, setBookingForm] = useState({ date: "", notes: "", eventId: "" });
   const [vendors, setVendors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchVendors();
   }, []);
 
   const fetchVendors = async () => {
-    const res = await axios.get("https://eventglow-backend.onrender.com/api/vendors/public");
-    setVendors(res.data);
+    try {
+      setLoading(true);
+
+      const res = await axios.get(
+        "https://eventglow-backend.onrender.com/api/vendors/public"
+      );
+
+      setVendors(res.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const openVendor = async (v: any) => {
@@ -126,6 +138,14 @@ export default function Vendors() {
       return [];
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-muted-foreground">Loading vendors...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

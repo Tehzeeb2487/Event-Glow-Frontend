@@ -72,10 +72,10 @@ export default function Earnings() {
     fetchEarnings();
   }, [])
 
-  if(loading) {
+  if (loading) {
     return (
-      <div className="flex item-center justify-center h-[60vh]">
-        <p>Loading...</p>
+      <div className="flex items-center justify-center py-20">
+        <p className="text-muted-foreground">Loading earnings...</p>
       </div>
     )
   }

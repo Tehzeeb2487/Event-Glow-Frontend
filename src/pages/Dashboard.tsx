@@ -1,10 +1,10 @@
 import { useApp } from "@/contexts/AppContext";
 import StatCard from "../components/shared/StateCard";
 import { Wallet, TrendingDown, PiggyBank, CalendarDays, MapPin, Utensils, Palette, MoreHorizontal } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion} from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -13,55 +13,36 @@ export default function Dashboard() {
   const totalBudget = events.reduce((s, e) => s + e.budget, 0);
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const remaining = totalBudget - totalExpenses;
-
-  const fetchExpenses = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        "https://eventglow-backend.onrender.com/api/expenses/my",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // map to your context format
-      const formatted = (res.data.data || []).map((e: any) => ({
-        id: e.id,
-        eventId: e.event_id.toString(),
-        category: e.category,
-        amount: Number(e.amount),
-        createdAt: e.created_at,
-      }));
-
-      // you need setter in context
-      setExpenses(formatted);
-
-    } catch (err) {
-      console.log(err);
-      toast.error("Failed to load expenses");
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const loadData = async () => {
       try {
+        setLoading(true);
 
         const token = localStorage.getItem("token");
 
-        const res = await axios.get(
-          "https://eventglow-backend.onrender.com/api/events/my",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const [eventsRes, expensesRes] = await Promise.all([
+          axios.get(
+            "https://eventglow-backend.onrender.com/api/events/my",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          ),
+          axios.get(
+            "https://eventglow-backend.onrender.com/api/expenses/my",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          ),
+        ]);
 
         setUserEvents(
-          (res.data.data || []).map((e: any) => ({
+          (eventsRes.data.data || []).map((e: any) => ({
             id: e.id.toString(),
             name: e.name,
             type: e.event_type,
@@ -71,15 +52,26 @@ export default function Dashboard() {
           }))
         );
 
+        setExpenses(
+          (expensesRes.data.data || []).map((e: any) => ({
+            id: e.id,
+            eventId: e.event_id.toString(),
+            category: e.category,
+            amount: Number(e.amount),
+            createdAt: e.created_at,
+          }))
+        );
+
       } catch (err) {
         console.log(err);
         toast.error("Failed to load events");
+      } finally {
+        setLoading(false);
       }
     };
 
     if (user?.id) {
-      fetchEvents();
-      fetchExpenses();
+      loadData();
     }
   }, [user?.id]);
 
@@ -89,6 +81,14 @@ export default function Dashboard() {
   });
 
   const fmt = (n: number) => "₹" + n.toLocaleString("en-IN");
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-muted-foreground">Loading dashboard...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

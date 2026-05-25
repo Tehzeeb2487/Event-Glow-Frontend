@@ -21,6 +21,7 @@ export default function ManageEvents() {
   const filters = ["All", "pending", "contacted", "confirmed"];
   const [activeFilter, setActiveFilter] = useState("All");
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
   const filteredEvents = events.filter((e) => {
     const matchStatus =
       activeFilter === "All" ||
@@ -41,6 +42,7 @@ export default function ManageEvents() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
+        setLoading(true);
 
         const token = localStorage.getItem("token");
 
@@ -70,6 +72,8 @@ export default function ManageEvents() {
       } catch (err) {
         console.log(err);
         toast.error("Failed to load events");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -182,7 +186,16 @@ export default function ManageEvents() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredEvents.length === 0 
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={8}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  Loading events...
+                </TableCell>
+              </TableRow>
+            ) : filteredEvents.length === 0 
             ? (
               <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No users found</TableCell></TableRow>
             ) : filteredEvents.map((e) => {

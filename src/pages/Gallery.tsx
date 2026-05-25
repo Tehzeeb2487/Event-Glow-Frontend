@@ -11,6 +11,7 @@ type GalleryItem = {
 
 export default function Gallery() {
   const [images, setImages] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchGallery()
@@ -22,8 +23,19 @@ export default function Gallery() {
       setImages(res.data);
     } catch(err) {
       console.error(err);
+    } finally{
+      setLoading(false);
     }
   }
+
+  if (loading) {
+    return (
+      <div className="flex item-center justify-center h-[60vh]">
+        <p>Loading...</p>
+      </div>
+    )
+  }
+  
   return (
     <div>
       <section className="gradient-primary py-16">

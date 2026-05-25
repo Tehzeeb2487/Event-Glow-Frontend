@@ -16,12 +16,12 @@ export default function AdminProfile() {
   const [email, setEmail] = useState(user?.email || "");
 
   useEffect(() => {
-      if (user) {
-        setEmail(user.email);
-        setName(user.name || "");
-        setPhone(user.phone || "")
-        setAvatar(user.avatar || null);
-      }
+    if (user) {
+      setEmail(user.email);
+      setName(user.name || "");
+      setPhone(user.phone || "")
+      setAvatar(user.avatar || null);
+    }
   }, [user]);
 
   const handleImageUpload = async (file: File) => {
@@ -114,7 +114,7 @@ export default function AdminProfile() {
         return;
       }
 
-      // ✅ UI update
+      // UI update
       updateUser({
         name,
         phone,

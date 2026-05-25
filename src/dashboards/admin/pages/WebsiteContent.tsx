@@ -27,6 +27,7 @@ export default function WebsiteContent() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannerDraft, setBannerDraft] = useState<Banner | null>(null);
   const [editingBanner, setEditingBanner] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [about, setAbout] = useState<AboutContent>({
     storyTitle: "",
@@ -52,13 +53,26 @@ export default function WebsiteContent() {
   const BANNER_API = "https://eventglow-backend.onrender.com/api/banner";
 
   useEffect(() => {
-    fetchAbout();
-    fetchBanner();
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        await Promise.all([
+          fetchAbout(),
+          fetchBanner(),
+        ]);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   const fetchAbout = async () => {
     try {
-
       const res = await axios.get(API_URL);
 
       const aboutData = res.data.about;
@@ -82,7 +96,6 @@ export default function WebsiteContent() {
 
   const fetchBanner = async () => {
     try {
-
       const res = await axios.get(BANNER_API);
 
       const bannerData = Array.isArray(res.data)
@@ -498,6 +511,14 @@ export default function WebsiteContent() {
     about.storyTitle ||
     about.storyDescription
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-muted-foreground">Loading website content...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

@@ -47,15 +47,28 @@ const colorMap: any = {
 };
 
 export default function MyBookings() {
-  const { user } = useApp();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const navigate = useNavigate();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewing, setReviewing] = useState<{ bookingId: number; vendorName: string; existing?: Review } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBookings();
-    fetchReviews();
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        await Promise.all([
+          fetchBookings(),
+          fetchReviews()
+        ]);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
   }, []);
 
   const fetchReviews = async () => {
@@ -205,6 +218,14 @@ export default function MyBookings() {
   };
 
   const reviewFor = (id: number) => reviews.find((r) => Number(r.booking_id) === id);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-muted-foreground">Loading bookings...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

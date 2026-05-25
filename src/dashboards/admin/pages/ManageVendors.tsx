@@ -42,9 +42,12 @@ export default function ManageVendors() {
   const [selected, setSelected] = useState<Vendor | null>(null);
   const filters = ["All", "Verified", "Pending", "Rejected"];
   const [activeFilter, setActiveFilter] = useState("All");
+  const [loading, setLoading] = useState(true);
 
   const fetchVendors = async () => {
     try {
+      setLoading(true);
+
       const token = localStorage.getItem("token");
 
       const res = await fetch("https://eventglow-backend.onrender.com/api/vendors/", {
@@ -83,6 +86,8 @@ export default function ManageVendors() {
         
     } catch (err) {
       console.log("Error fetching vendors", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -242,7 +247,16 @@ export default function ManageVendors() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  Loading Vendors...
+                </TableCell>
+              </TableRow>
+            ) : filtered.length === 0 ? (
               <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No vendors found</TableCell></TableRow>
             ) :filtered.map((v) => (
               <TableRow key={v.id}>

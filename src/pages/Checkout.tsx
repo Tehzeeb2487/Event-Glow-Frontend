@@ -12,13 +12,15 @@ export default function Checkout() {
   const [paid, setPaid] = useState(false);
   const [booking, setBooking] = useState<any>(null);
   const [method, setMethod] = useState("upi");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchBooking();
-  }, []);
+  }, [bookingId]);
 
   const fetchBooking = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
@@ -35,6 +37,9 @@ export default function Checkout() {
       setBooking(found);
     } catch (err) {
       console.log(err);
+       toast.error("Failed to load booking");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,7 +72,13 @@ export default function Checkout() {
     }
   };
 
-  // const booking = bookings.find((b) => b.id === Number(bookingId));
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
 
   if (!booking) {
     return (

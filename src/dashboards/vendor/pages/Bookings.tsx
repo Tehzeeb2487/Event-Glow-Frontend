@@ -31,7 +31,7 @@ export default function Bookings() {
   const [activeFilter, setActiveFilter] = useState<string>("All");
   const [search, setSearch] = useState("");
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchBookings();
@@ -39,10 +39,9 @@ export default function Bookings() {
 
   const fetchBookings = async () => {
     try {
-      const token = localStorage.getItem("token");
+      setLoading(true);
 
-      // localStorage se vendor data lo
-      const vendor = JSON.parse(localStorage.getItem("vendor") || "{}");
+      const token = localStorage.getItem("token");
 
       const res = await axios.get(
         `https://eventglow-backend.onrender.com/api/bookings/vendor`,
@@ -165,7 +164,16 @@ export default function Bookings() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={8}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  Loading bookings...
+                </TableCell>
+              </TableRow>
+            ) : filtered.length === 0 ? (
               <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No bookings found</TableCell></TableRow>
             ) : filtered.map((b) => (
               <TableRow key={b.id}>
