@@ -177,7 +177,7 @@ export default function ManageUsers() {
     
                     {u.image ? (
                       <img
-                        src={`https://eventglow-backend.onrender.com/uploads/${u.image}`}
+                        src={u.image}
                         alt={u.fullname}
                         className="h-10 w-10 rounded-full object-cover border"
                       />
@@ -240,7 +240,7 @@ export default function ManageUsers() {
               <div className="flex items-center gap-4 rounded-xl border bg-muted/40 p-4">
                 {selected.image ? (
                   <img
-                    src={`https://eventglow-backend.onrender.com/uploads/${selected.image}`}
+                    src={selected.image}
                     alt={selected.fullname}
                     className="h-14 w-14 rounded-full object-cover border shadow-md"
                   />

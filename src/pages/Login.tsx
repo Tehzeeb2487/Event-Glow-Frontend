@@ -80,7 +80,7 @@ export default function Login() {
         profile_completed: profileData.profile_completed,
         phone: profileData.phone,
         avatar: profileData.image
-          ? `https://eventglow-backend.onrender.com/uploads/${profileData.image}`
+          ? profileData.image
           : undefined,
 
         business_name: profileData.business_name,

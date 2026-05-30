@@ -266,7 +266,7 @@ export default function ManageVendors() {
 
                     {v.image ? (
                       <img
-                        src={`https://eventglow-backend.onrender.com/uploads/${v.image}`}
+                        src={v.image}
                         alt={v.name}
                         className="h-10 w-10 rounded-full object-cover border"
                       />
@@ -353,7 +353,7 @@ export default function ManageVendors() {
 
                 {selected.image ? (
                   <img
-                    src={`https://eventglow-backend.onrender.com/uploads/${selected.image}`}
+                    src={selected.image}
                     alt={selected.name}
                     className="h-14 w-14 rounded-full object-cover border shadow-md"
                   />

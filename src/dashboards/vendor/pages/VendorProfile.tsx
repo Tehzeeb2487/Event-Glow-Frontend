@@ -60,7 +60,7 @@ export default function VendorProfile() {
     const data = await res.json();
   
     if (res.ok) {
-      const imageUrl = `https://eventglow-backend.onrender.com/uploads/${data.image}`;
+      const imageUrl = data.image;
   
       updateUser({
         avatar: imageUrl,
