@@ -50,6 +50,8 @@ export default function WebsiteContent() {
     initials: "",
     image: "",
   });
+  const [memberImage, setMemberImage] = useState<File | null>(null);
+  const [editMemberImage, setEditMemberImage] = useState<File | null>(null);
 
   const API_URL = "https://eventglow-backend.onrender.com/api/about";
   const BANNER_API = "https://eventglow-backend.onrender.com/api/banner";
@@ -411,14 +413,18 @@ export default function WebsiteContent() {
 
       const token = localStorage.getItem("token");
 
+      const formData = new FormData();
+
+      formData.append("name", memberDraft.name);
+      formData.append("role", memberDraft.role);
+      formData.append("initials", memberDraft.initials);
+      if (editMemberImage) {
+        formData.append("image", editMemberImage);
+      }
+
       await axios.put(
         `${API_URL}/team/${memberDraft.id}`,
-        {
-          name: memberDraft.name,
-          role: memberDraft.role,
-          initials: memberDraft.initials,
-          image_url: memberDraft.image,
-        },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -483,16 +489,21 @@ export default function WebsiteContent() {
 
       const token = localStorage.getItem("token");
 
+      const formData = new FormData();
+
+      formData.append("name", newMember.name);
+      formData.append("role", newMember.role);
+      formData.append(
+        "initials", 
+        newMember.initials || newMember.name.charAt(0).toUpperCase()
+      );
+      if (memberImage) {
+        formData.append("image", memberImage);
+      }
+
       await axios.post(
         `${API_URL}/team`,
-        {
-          name: newMember.name,
-          role: newMember.role,
-          initials:
-            newMember.initials ||
-            newMember.name.charAt(0).toUpperCase(),
-          image_url: newMember.image,
-        },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -805,13 +816,13 @@ export default function WebsiteContent() {
                         />
                         <Input
                           type="file"
-                          value={memberDraft!.image || ""}
-                          onChange={(e) =>
-                            setMemberDraft({
-                              ...memberDraft!,
-                              image: e.target.value,
-                            })
-                          }
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setEditMemberImage(file);
+                            }
+                          }}
                         />
                         <Input
                           placeholder="Role"
@@ -880,13 +891,13 @@ export default function WebsiteContent() {
                 />
                 <Input
                   type="file"
-                  value={newMember.image}
-                  onChange={(e) =>
-                    setNewMember({
-                      ...newMember,
-                      image: e.target.value,
-                    })
-                  }
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setMemberImage(file);
+                    }
+                  }}
                 />
                 <Input
                   placeholder="Role"
