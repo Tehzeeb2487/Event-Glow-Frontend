@@ -28,6 +28,7 @@ export default function WebsiteContent() {
   const [bannerDraft, setBannerDraft] = useState<Banner | null>(null);
   const [editingBanner, setEditingBanner] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [bannerImage, setBannerImage] = useState<File | null>(null);
 
   const [about, setAbout] = useState<AboutContent>({
     storyTitle: "",
@@ -43,10 +44,11 @@ export default function WebsiteContent() {
   const [memberDraft, setMemberDraft] = useState<TeamMember | null>(null);
 
   // Add member form (always-empty by default)
-  const [newMember, setNewMember] = useState<{ name: string; role: string; initials: string }>({
+  const [newMember, setNewMember] = useState<{ name: string; role: string; initials: string; image?: string; }>({
     name: "",
     role: "",
     initials: "",
+    image: "",
   });
 
   const API_URL = "https://eventglow-backend.onrender.com/api/about";
@@ -105,10 +107,10 @@ export default function WebsiteContent() {
       if (bannerData) {
 
         const formattedBanner: Banner = {
-          id: res.data.id?.toString() || "",
-          title: res.data.title || "",
-          subtitle: res.data.description || "",
-          image: res.data.image_url || "",
+          id: bannerData.id?.toString() || "",
+          title: bannerData.title || "",
+          subtitle: bannerData.description || "",
+          image: bannerData.image_url || "",
           ctaText: "",
           ctaLink: "",
         };
@@ -132,6 +134,7 @@ export default function WebsiteContent() {
         name: member.name,
         role: member.role,
         initials: member.initials,
+        image: member.image_url,
       }));
 
       setAbout((prev) => ({
@@ -162,12 +165,25 @@ export default function WebsiteContent() {
 
     if (!bannerDraft) return;
 
-    if (!bannerDraft.title.trim() || !bannerDraft.image.trim()) {
-      toast.error("Title and image URL are required");
+    if (!bannerDraft.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+
+    if (!bannerDraft.id && !bannerImage) {
+      toast.error("Please select a banner image");
       return;
     }
 
     try {
+       const formData = new FormData();
+
+      formData.append("title", bannerDraft.title);
+      formData.append("description", bannerDraft.subtitle);
+
+      if (bannerImage) {
+        formData.append("image", bannerImage);
+      }
 
       const token = localStorage.getItem("token");
 
@@ -176,11 +192,7 @@ export default function WebsiteContent() {
 
         await axios.put(
           `${BANNER_API}/${bannerDraft.id}`,
-          {
-            title: bannerDraft.title,
-            description: bannerDraft.subtitle,
-            image_url: bannerDraft.image,
-          },
+          formData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -197,11 +209,7 @@ export default function WebsiteContent() {
 
         const res = await axios.post(
           BANNER_API,
-          {
-            title: bannerDraft.title,
-            description: bannerDraft.subtitle,
-            image_url: bannerDraft.image,
-          },
+          formData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -409,6 +417,7 @@ export default function WebsiteContent() {
           name: memberDraft.name,
           role: memberDraft.role,
           initials: memberDraft.initials,
+          image_url: memberDraft.image,
         },
         {
           headers: {
@@ -482,6 +491,7 @@ export default function WebsiteContent() {
           initials:
             newMember.initials ||
             newMember.name.charAt(0).toUpperCase(),
+          image_url: newMember.image,
         },
         {
           headers: {
@@ -562,11 +572,13 @@ export default function WebsiteContent() {
             <div className="overflow-hidden rounded-2xl border bg-card shadow-card">
 
               <div className="relative aspect-[16/7] overflow-hidden bg-muted">
-                <img
-                  src={currentBanner.image}
-                  alt={currentBanner.title}
-                  className="h-full w-full object-cover"
-                />
+                {currentBanner.image && (
+                  <img
+                    src={currentBanner.image}
+                    alt={currentBanner.title}
+                    className="h-full w-full object-cover"
+                  />
+                )}
 
                 <div className="absolute inset-0 bg-black/40" />
 
@@ -637,14 +649,14 @@ export default function WebsiteContent() {
                 />
 
                 <Input
-                  placeholder="Image URL"
-                  value={bannerDraft.image}
-                  onChange={(e) =>
-                    setBannerDraft({
-                      ...bannerDraft,
-                      image: e.target.value,
-                    })
-                  }
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>{
+                    const file = e.target.files?.[0];
+                    if(file) {
+                      setBannerImage(file);
+                    }
+                  }}
                 />
 
                 <Input
@@ -792,6 +804,16 @@ export default function WebsiteContent() {
                           onChange={(e) => setMemberDraft({ ...memberDraft!, name: e.target.value })}
                         />
                         <Input
+                          type="file"
+                          value={memberDraft!.image || ""}
+                          onChange={(e) =>
+                            setMemberDraft({
+                              ...memberDraft!,
+                              image: e.target.value,
+                            })
+                          }
+                        />
+                        <Input
                           placeholder="Role"
                           value={memberDraft!.role}
                           onChange={(e) => setMemberDraft({ ...memberDraft!, role: e.target.value })}
@@ -813,9 +835,17 @@ export default function WebsiteContent() {
                     ) : (
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full gradient-primary text-sm font-bold text-primary-foreground">
-                            {m.initials || m.name.charAt(0)}
-                          </div>
+                          {m.image ? (
+                            <img
+                              src={m.image}
+                              alt={m.name}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full gradient-primary text-sm font-bold text-primary-foreground">
+                              {m.initials || m.name.charAt(0)}
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-card-foreground">{m.name}</p>
                             <p className="truncate text-xs text-muted-foreground">{m.role}</p>
@@ -847,6 +877,16 @@ export default function WebsiteContent() {
                   placeholder="Name"
                   value={newMember.name}
                   onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                />
+                <Input
+                  type="file"
+                  value={newMember.image}
+                  onChange={(e) =>
+                    setNewMember({
+                      ...newMember,
+                      image: e.target.value,
+                    })
+                  }
                 />
                 <Input
                   placeholder="Role"

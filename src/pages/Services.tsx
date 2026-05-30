@@ -38,6 +38,7 @@ export default function Services() {
         }));
         setServices(formatted);
         setLoading(false);
+        console.log(formatted)
       })
       .catch(err => {
         console.error(err)

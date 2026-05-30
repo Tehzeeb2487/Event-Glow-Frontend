@@ -12,6 +12,7 @@ export interface TeamMember {
   name: string;
   role: string;
   initials: string;
+  image?: string;
 }
 
 export interface AboutContent {
